@@ -8,7 +8,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Nefarius.Devcon</RootNamespace>
-    <AssemblyName>ManagedDevcon</AssemblyName>
+    <AssemblyName>Nefarius.Devcon</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
