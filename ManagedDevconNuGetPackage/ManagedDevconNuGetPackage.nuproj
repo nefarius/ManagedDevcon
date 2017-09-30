@@ -23,7 +23,7 @@
   <PropertyGroup Label="Configuration">
     <Id>Nefarius.Devcon</Id>
     <Version>1.0.0</Version>
-    <Title>ManagedDevconNuGetPackage</Title>
+    <Title>Nefarius.Devcon</Title>
     <Authors>Benjamin Höglinger-Stelzer</Authors>
     <Owners>Benjamin Höglinger-Stelzer</Owners>
     <Summary>Managed wrapper for SetupAPI.</Summary>
