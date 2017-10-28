@@ -24,7 +24,6 @@ class Build : NukeBuild
     //[GitVersion] readonly GitVersion GitVersion;
     //[GitRepository] readonly GitRepository GitRepository;
     //[Parameter] readonly string MyGetApiKey;
-    const string CommonVersion = "1.1.0.0";
 
     Target Clean => _ => _
             .OnlyWhen(() => false) // Disabled for safety.
@@ -45,10 +44,6 @@ class Build : NukeBuild
             .DependsOn(Restore)
             .Executes(() =>
             {
-                MSBuild(s => DefaultMSBuildCompile
-                    .SetAssemblyVersion(CommonVersion)
-                    .SetFileVersion(CommonVersion)
-                    .SetInformationalVersion(CommonVersion)
-                    .SetPackageVersion(CommonVersion));
+                MSBuild(s => DefaultMSBuildCompile);
             });
 }
