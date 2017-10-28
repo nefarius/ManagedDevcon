@@ -23,6 +23,9 @@
     <PackageProjectUrl>https://github.com/nefarius/ManagedDevcon</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nefarius/ManagedDevcon</RepositoryUrl>
     <PackageTags>devcon setupapi</PackageTags>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
