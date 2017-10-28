@@ -27,6 +27,7 @@
     <FileVersion>1.1.0.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>1.1.0</Version>
+    <PackageIconUrl>https://lh3.googleusercontent.com/-oFqSgAMtZSY/WfUDIj9sQkI/AAAAAAAAAek/y-U3MxW2l2MKRcPKN7wMtbRrJTvR0JCKQCHMYCw/s0/if_Settings_2290860.png</PackageIconUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
