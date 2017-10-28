@@ -49,6 +49,6 @@ class Build : NukeBuild
                     .SetAssemblyVersion(CommonVersion)
                     .SetFileVersion(CommonVersion)
                     .SetInformationalVersion(CommonVersion)
-                    .ResetPackageVersion());
+                    .SetPackageVersion(CommonVersion));
             });
 }
