@@ -150,7 +150,7 @@ namespace Nefarius.Devcon
             IntPtr hwndParent,
             string FullInfPath,
             uint Flags,
-            ref bool NeedReboot);
+            out bool NeedReboot);
 
         [DllImport("newdev.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool UpdateDriverForPlugAndPlayDevices(

@@ -17,7 +17,7 @@ namespace Nefarius.Devcon
         /// <param name="instanceId">The instance ID of the enumerated device.</param>
         /// <param name="instance">Optional instance ID (zero-based) specifying the device to process on multiple matches.</param>
         /// <returns>True if at least one device was found with the provided class, false otherwise.</returns>
-        public static bool Find(Guid target, ref string path, ref string instanceId, int instance = 0)
+        public static bool Find(Guid target, out string path, out string instanceId, int instance = 0)
         {
             var detailDataBuffer = IntPtr.Zero;
             var deviceInfoSet = IntPtr.Zero;
@@ -77,6 +77,7 @@ namespace Nefarius.Devcon
                     SetupDiDestroyDeviceInfoList(deviceInfoSet);
             }
 
+            path = instanceId = string.Empty;
             return false;
         }
 
@@ -86,9 +87,9 @@ namespace Nefarius.Devcon
         /// <param name="fullInfPath">An ansolute path to the .INF file to install.</param>
         /// <param name="rebootRequired">True if a machine reboot is required, false otherwise.</param>
         /// <returns>True on success, false otherwise.</returns>
-        public static bool Install(string fullInfPath, ref bool rebootRequired)
+        public static bool Install(string fullInfPath, out bool rebootRequired)
         {
-            return DiInstallDriver(IntPtr.Zero, fullInfPath, DIIRFLAG_FORCE_INF, ref rebootRequired);
+            return DiInstallDriver(IntPtr.Zero, fullInfPath, DIIRFLAG_FORCE_INF, out rebootRequired);
         }
 
         /// <summary>
