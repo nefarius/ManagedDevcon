@@ -76,6 +76,10 @@ namespace Nefarius.Devcon
 
         private const uint DIIRFLAG_FORCE_INF = 0x00000002;
 
+        private const uint INSTALLFLAG_FORCE             = 0x00000001;  // Force the installation of the specified driver
+        private const uint INSTALLFLAG_READONLY          = 0x00000002;  // Do a read-only install (no file copy)
+        private const uint INSTALLFLAG_NONINTERACTIVE    = 0x00000004;
+
         #endregion
 
         #region Interop Definitions
@@ -147,6 +151,15 @@ namespace Nefarius.Devcon
             string FullInfPath,
             uint Flags,
             ref bool NeedReboot);
+
+        [DllImport("newdev.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern bool UpdateDriverForPlugAndPlayDevices(
+            [In, Optional]  IntPtr hwndParent,
+            [In] string HardwareId,
+            [In] string FullInfPath,
+            [In] uint InstallFlags,
+            [Out] out bool bRebootRequired
+        );
 
         #endregion
     }

@@ -189,5 +189,22 @@ namespace Nefarius.Devcon
             if (CM_Locate_DevNode_Ex(out devRoot, IntPtr.Zero, 0, IntPtr.Zero) != CR_SUCCESS) return false;
             return CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == CR_SUCCESS;
         }
+
+        /// <summary>
+        ///     Given an INF file and a hardware ID, this function installs updated drivers for devices that match the hardware ID.
+        /// </summary>
+        /// <param name="hardwareId">A string that supplies the hardware identifier to match existing devices on the computer.</param>
+        /// <param name="fullInfPath">A string that supplies the full path file name of an INF file.</param>
+        /// <param name="rebootRequired">A variable that indicates whether a restart is required and who should prompt for it.</param>
+        /// <returns>
+        ///     The function returns TRUE if a device was upgraded to the specified driver.
+        ///     Otherwise, it returns FALSE and the logged error can be retrieved with a call to GetLastError.
+        /// </returns>
+        public static bool Update(string hardwareId, string fullInfPath,
+            out bool rebootRequired)
+        {
+            return UpdateDriverForPlugAndPlayDevices(IntPtr.Zero, hardwareId, fullInfPath,
+                INSTALLFLAG_FORCE | INSTALLFLAG_NONINTERACTIVE, out rebootRequired);
+        }
     }
 }
