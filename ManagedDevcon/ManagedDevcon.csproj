@@ -23,10 +23,10 @@
     <PackageProjectUrl>https://github.com/nefarius/ManagedDevcon</PackageProjectUrl>
     <RepositoryUrl>https://github.com/nefarius/ManagedDevcon</RepositoryUrl>
     <PackageTags>devcon setupapi</PackageTags>
-    <AssemblyVersion>1.3.0.0</AssemblyVersion>
-    <FileVersion>1.3.0.0</FileVersion>
+    <AssemblyVersion>1.3.1.0</AssemblyVersion>
+    <FileVersion>1.3.1.0</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.3.0</Version>
+    <Version>1.3.1</Version>
     <PackageIconUrl>https://lh3.googleusercontent.com/-oFqSgAMtZSY/WfUDIj9sQkI/AAAAAAAAAek/y-U3MxW2l2MKRcPKN7wMtbRrJTvR0JCKQCHMYCw/s0/if_Settings_2290860.png</PackageIconUrl>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

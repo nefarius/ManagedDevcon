@@ -139,10 +139,9 @@ namespace Nefarius.Devcon
         ///     Removed a device node identified by class GUID, path and instance ID.
         /// </summary>
         /// <param name="classGuid">The device class GUID.</param>
-        /// <param name="path">The device node path.</param>
         /// <param name="instanceId">The instance ID.</param>
         /// <returns>True on success, false otherwise.</returns>
-        public static bool Remove(Guid classGuid, string path, string instanceId)
+        public static bool Remove(Guid classGuid, string instanceId)
         {
             var deviceInfoSet = IntPtr.Zero;
 
@@ -156,9 +155,8 @@ namespace Nefarius.Devcon
 
                 if (SetupDiOpenDeviceInfo(deviceInfoSet, instanceId, IntPtr.Zero, 0, ref deviceInterfaceData))
                 {
-                    var props = new SP_REMOVEDEVICE_PARAMS();
+                    var props = new SP_REMOVEDEVICE_PARAMS {ClassInstallHeader = new SP_CLASSINSTALL_HEADER()};
 
-                    props.ClassInstallHeader = new SP_CLASSINSTALL_HEADER();
                     props.ClassInstallHeader.cbSize = Marshal.SizeOf(props.ClassInstallHeader);
                     props.ClassInstallHeader.InstallFunction = DIF_REMOVE;
 
@@ -185,9 +183,7 @@ namespace Nefarius.Devcon
         /// <returns>True on success, false otherwise.</returns>
         public static bool Refresh()
         {
-            uint devRoot;
-
-            if (CM_Locate_DevNode_Ex(out devRoot, IntPtr.Zero, 0, IntPtr.Zero) != CR_SUCCESS) return false;
+            if (CM_Locate_DevNode_Ex(out var devRoot, IntPtr.Zero, 0, IntPtr.Zero) != CR_SUCCESS) return false;
             return CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == CR_SUCCESS;
         }
 
