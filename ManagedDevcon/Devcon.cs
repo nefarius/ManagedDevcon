@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using JetBrains.Annotations;
 
 namespace Nefarius.Devcon
 {
     /// <summary>
     ///     Managed wrapper for SetupAPI.
     /// </summary>
-    /// <remarks>https://msdn.microsoft.com/en-us/library/windows/hardware/ff550897(v=vs.85).aspx</remarks>
+    /// <remarks>https://docs.microsoft.com/en-us/windows-hardware/drivers/install/setupapi</remarks>
     public static partial class Devcon
     {
         /// <summary>
@@ -17,6 +18,7 @@ namespace Nefarius.Devcon
         /// <param name="instanceId">The instance ID of the enumerated device.</param>
         /// <param name="instance">Optional instance ID (zero-based) specifying the device to process on multiple matches.</param>
         /// <returns>True if at least one device was found with the provided class, false otherwise.</returns>
+        [UsedImplicitly]
         public static bool Find(Guid target, out string path, out string instanceId, int instance = 0)
         {
             var detailDataBuffer = IntPtr.Zero;
@@ -84,9 +86,10 @@ namespace Nefarius.Devcon
         /// <summary>
         ///     Invokes the installation of a driver via provided .INF file.
         /// </summary>
-        /// <param name="fullInfPath">An ansolute path to the .INF file to install.</param>
+        /// <param name="fullInfPath">An absolute path to the .INF file to install.</param>
         /// <param name="rebootRequired">True if a machine reboot is required, false otherwise.</param>
         /// <returns>True on success, false otherwise.</returns>
+        [UsedImplicitly]
         public static bool Install(string fullInfPath, out bool rebootRequired)
         {
             return DiInstallDriver(IntPtr.Zero, fullInfPath, DIIRFLAG_FORCE_INF, out rebootRequired);
@@ -99,6 +102,7 @@ namespace Nefarius.Devcon
         /// <param name="classGuid">The GUID of the device class.</param>
         /// <param name="node">The node path terminated by two null characters.</param>
         /// <returns>True on success, false otherwise.</returns>
+        [UsedImplicitly]
         public static bool Create(string className, Guid classGuid, string node)
         {
             var deviceInfoSet = (IntPtr) (-1);
@@ -141,6 +145,7 @@ namespace Nefarius.Devcon
         /// <param name="classGuid">The device class GUID.</param>
         /// <param name="instanceId">The instance ID.</param>
         /// <returns>True on success, false otherwise.</returns>
+        [UsedImplicitly]
         public static bool Remove(Guid classGuid, string instanceId)
         {
             var deviceInfoSet = IntPtr.Zero;
@@ -181,6 +186,7 @@ namespace Nefarius.Devcon
         ///     Instructs the system to re-enumerate hardware devices.
         /// </summary>
         /// <returns>True on success, false otherwise.</returns>
+        [UsedImplicitly]
         public static bool Refresh()
         {
             if (CM_Locate_DevNode_Ex(out var devRoot, IntPtr.Zero, 0, IntPtr.Zero) != CR_SUCCESS) return false;
@@ -197,6 +203,7 @@ namespace Nefarius.Devcon
         ///     The function returns TRUE if a device was upgraded to the specified driver.
         ///     Otherwise, it returns FALSE and the logged error can be retrieved with a call to GetLastError.
         /// </returns>
+        [UsedImplicitly]
         public static bool Update(string hardwareId, string fullInfPath,
             out bool rebootRequired)
         {
