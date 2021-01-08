@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2005
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = ".build", ".\build\.build.csproj", "{7E0B18E9-92DA-4A70-8DEB-103EEED3CDFA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagedDevcon", "ManagedDevcon\ManagedDevcon.csproj", "{47DA5752-0990-4987-BBEA-AF67C319D654}"
 EndProject
 Global
@@ -13,8 +11,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7E0B18E9-92DA-4A70-8DEB-103EEED3CDFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7E0B18E9-92DA-4A70-8DEB-103EEED3CDFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47DA5752-0990-4987-BBEA-AF67C319D654}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47DA5752-0990-4987-BBEA-AF67C319D654}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47DA5752-0990-4987-BBEA-AF67C319D654}.Release|Any CPU.ActiveCfg = Release|Any CPU
