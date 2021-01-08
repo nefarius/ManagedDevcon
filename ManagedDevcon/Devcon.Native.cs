@@ -17,7 +17,10 @@ namespace Nefarius.Devcon
         private const int DIF_REGISTERDEVICE = 0x0019;
 
         private const int DI_REMOVEDEVICE_GLOBAL = 0x0001;
-
+        
+        private const int DI_NEEDRESTART = 0x00000080;
+        private const int DI_NEEDREBOOT = 0x00000100;
+        
         [StructLayout(LayoutKind.Sequential)]
         private struct SP_DEVINFO_DATA
         {
@@ -128,6 +131,13 @@ namespace Nefarius.Devcon
         private static extern bool SetupDiSetClassInstallParams(IntPtr DeviceInfoSet,
             ref SP_DEVINFO_DATA DeviceInterfaceData, ref SP_REMOVEDEVICE_PARAMS ClassInstallParams,
             int ClassInstallParamsSize);
+        
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetupDiGetDeviceInstallParams(
+            IntPtr hDevInfo,
+            ref SP_DEVINFO_DATA DeviceInfoData,
+            IntPtr DeviceInstallParams
+        );
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern uint CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,

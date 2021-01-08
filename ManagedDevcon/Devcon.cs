@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 
@@ -113,22 +114,36 @@ namespace Nefarius.Devcon
                 deviceInfoSet = SetupDiCreateDeviceInfoList(ref classGuid, IntPtr.Zero);
 
                 if (deviceInfoSet == (IntPtr) (-1))
-                    return false;
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 deviceInfoData.cbSize = Marshal.SizeOf(deviceInfoData);
 
-                if (
-                    !SetupDiCreateDeviceInfo(deviceInfoSet, className, ref classGuid, null, IntPtr.Zero,
-                        DICD_GENERATE_ID, ref deviceInfoData))
-                    return false;
+                if (!SetupDiCreateDeviceInfo(
+                    deviceInfoSet,
+                    className,
+                    ref classGuid,
+                    null,
+                    IntPtr.Zero,
+                    DICD_GENERATE_ID,
+                    ref deviceInfoData
+                ))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (
-                    !SetupDiSetDeviceRegistryProperty(deviceInfoSet, ref deviceInfoData, SPDRP_HARDWAREID, node,
-                        node.Length * 2))
-                    return false;
+                if (!SetupDiSetDeviceRegistryProperty(
+                    deviceInfoSet,
+                    ref deviceInfoData,
+                    SPDRP_HARDWAREID,
+                    node,
+                    node.Length * 2
+                ))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (!SetupDiCallClassInstaller(DIF_REGISTERDEVICE, deviceInfoSet, ref deviceInfoData))
-                    return false;
+                if (!SetupDiCallClassInstaller(
+                    DIF_REGISTERDEVICE,
+                    deviceInfoSet,
+                    ref deviceInfoData
+                ))
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             finally
             {
@@ -148,17 +163,41 @@ namespace Nefarius.Devcon
         [UsedImplicitly]
         public static bool Remove(Guid classGuid, string instanceId)
         {
+            return Remove(classGuid, instanceId, out _);
+        }
+
+        /// <summary>
+        ///     Removed a device node identified by class GUID, path and instance ID.
+        /// </summary>
+        /// <param name="classGuid">The device class GUID.</param>
+        /// <param name="instanceId">The instance ID.</param>
+        /// <param name="rebootRequired">True if a reboot is required to complete the uninstall action, false otherwise.</param>
+        /// <returns>True on success, false otherwise.</returns>
+        [UsedImplicitly]
+        public static bool Remove(Guid classGuid, string instanceId, out bool rebootRequired)
+        {
             var deviceInfoSet = IntPtr.Zero;
+            var installParams = Marshal.AllocHGlobal(584); // Max struct size on x64 platform
 
             try
             {
-                var deviceInterfaceData = new SP_DEVINFO_DATA();
+                var deviceInfoData = new SP_DEVINFO_DATA();
+                deviceInfoData.cbSize = Marshal.SizeOf(deviceInfoData);
 
-                deviceInterfaceData.cbSize = Marshal.SizeOf(deviceInterfaceData);
-                deviceInfoSet = SetupDiGetClassDevs(ref classGuid, IntPtr.Zero, IntPtr.Zero,
-                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+                deviceInfoSet = SetupDiGetClassDevs(
+                    ref classGuid,
+                    IntPtr.Zero,
+                    IntPtr.Zero,
+                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE
+                );
 
-                if (SetupDiOpenDeviceInfo(deviceInfoSet, instanceId, IntPtr.Zero, 0, ref deviceInterfaceData))
+                if (SetupDiOpenDeviceInfo(
+                    deviceInfoSet,
+                    instanceId,
+                    IntPtr.Zero,
+                    0,
+                    ref deviceInfoData
+                ))
                 {
                     var props = new SP_REMOVEDEVICE_PARAMS {ClassInstallHeader = new SP_CLASSINSTALL_HEADER()};
 
@@ -168,18 +207,53 @@ namespace Nefarius.Devcon
                     props.Scope = DI_REMOVEDEVICE_GLOBAL;
                     props.HwProfile = 0x00;
 
-                    if (SetupDiSetClassInstallParams(deviceInfoSet, ref deviceInterfaceData, ref props,
-                        Marshal.SizeOf(props)))
-                        return SetupDiCallClassInstaller(DIF_REMOVE, deviceInfoSet, ref deviceInterfaceData);
+                    // Prepare class (un-)installer
+                    if (SetupDiSetClassInstallParams(
+                        deviceInfoSet,
+                        ref deviceInfoData,
+                        ref props,
+                        Marshal.SizeOf(props)
+                    ))
+                    {
+                        // Invoke class installer with uninstall action
+                        if (!SetupDiCallClassInstaller(DIF_REMOVE, deviceInfoSet, ref deviceInfoData))
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                        // Fill cbSize field
+                        Marshal.WriteInt32(
+                            installParams,
+                            0, // cbSize is first field, always 32 bits long
+                            IntPtr.Size == 4 ? 556 /* x86 size */ : 584 /* x64 size */
+                        );
+
+                        // Fill SP_DEVINSTALL_PARAMS struct
+                        if (!SetupDiGetDeviceInstallParams(deviceInfoSet, ref deviceInfoData, installParams))
+                            throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                        // Grab Flags field of SP_DEVINSTALL_PARAMS (offset of 32 bits)
+                        var flags = Marshal.ReadInt32(installParams, Marshal.SizeOf(typeof(uint)));
+
+                        // Test for restart/reboot flags being present
+                        rebootRequired = (flags & DI_NEEDRESTART) != 0 || (flags & DI_NEEDREBOOT) != 0;
+
+                        return true;
+                    }
+                    else
+                    {
+                        throw new Win32Exception(Marshal.GetLastWin32Error());
+                    }
+                }
+                else
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
             }
             finally
             {
                 if (deviceInfoSet != IntPtr.Zero)
                     SetupDiDestroyDeviceInfoList(deviceInfoSet);
+                Marshal.FreeHGlobal(installParams);
             }
-
-            return false;
         }
 
         /// <summary>
