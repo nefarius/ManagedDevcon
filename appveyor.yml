@@ -17,3 +17,9 @@ before_build:
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
 test: off
+deploy:
+- provider: Environment
+  name: nuget.org
+  on:
+    branch: master
+    appveyor_repo_tag: true
