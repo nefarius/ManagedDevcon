@@ -17,6 +17,8 @@ before_build:
 build:
   project: $(APPVEYOR_BUILD_FOLDER)\$(APPVEYOR_PROJECT_NAME).sln
 test: off
+artifacts:
+- path: 'bin**\*.nupkg'
 deploy:
 - provider: Environment
   name: nuget.org
