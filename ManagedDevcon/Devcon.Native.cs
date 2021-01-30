@@ -21,6 +21,15 @@ namespace Nefarius.Devcon
         private const int DI_NEEDRESTART = 0x00000080;
         private const int DI_NEEDREBOOT = 0x00000100;
         
+        private const uint DIF_PROPERTYCHANGE = 0x12;
+        private const uint DICS_ENABLE = 1;
+        private const uint DICS_DISABLE = 2;  // disable device
+        private const uint DICS_FLAG_GLOBAL = 1; // not profile-specific
+        private const uint DIGCF_ALLCLASSES = 4;
+        private const uint ERROR_INVALID_DATA = 13;
+        private const uint ERROR_NO_MORE_ITEMS = 259;
+        private const uint ERROR_ELEMENT_NOT_FOUND = 1168;
+        
         [StructLayout(LayoutKind.Sequential)]
         private struct SP_DEVINFO_DATA
         {
@@ -36,6 +45,15 @@ namespace Nefarius.Devcon
             internal int cbSize;
             internal int InstallFunction;
         }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SP_PROPCHANGE_PARAMS
+        {
+            internal SP_CLASSINSTALL_HEADER ClassInstallHeader;
+            internal UInt32 StateChange;
+            internal UInt32 Scope;
+            internal UInt32 HwProfile;
+        }
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SP_REMOVEDEVICE_PARAMS
@@ -43,6 +61,13 @@ namespace Nefarius.Devcon
             internal SP_CLASSINSTALL_HEADER ClassInstallHeader;
             internal int Scope;
             internal int HwProfile;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DEVPROPKEY
+        {
+            public Guid fmtid;
+            public UInt32 pid;
         }
 
         private const uint CM_REENUMERATE_NORMAL = 0x00000000;
@@ -105,6 +130,11 @@ namespace Nefarius.Devcon
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool SetupDiCallClassInstaller(int InstallFunction, IntPtr DeviceInfoSet,
             ref SP_DEVINFO_DATA DeviceInfoData);
+        
+        [DllImport("setupapi.dll", SetLastError = true)]
+        private static extern bool SetupDiEnumDeviceInfo(IntPtr deviceInfoSet,
+            UInt32 memberIndex,
+            [Out] out SP_DEVINFO_DATA deviceInfoData);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern IntPtr SetupDiGetClassDevs(ref Guid ClassGuid, IntPtr Enumerator, IntPtr hwndParent,
@@ -126,6 +156,11 @@ namespace Nefarius.Devcon
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool SetupDiOpenDeviceInfo(IntPtr DeviceInfoSet, string DeviceInstanceId,
             IntPtr hwndParent, int Flags, ref SP_DEVINFO_DATA DeviceInfoData);
+        
+        [DllImport("setupapi.dll", SetLastError = true)]
+        private static extern bool SetupDiChangeState(
+            IntPtr deviceInfoSet,
+            [In] ref SP_DEVINFO_DATA deviceInfoData);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern bool SetupDiSetClassInstallParams(IntPtr DeviceInfoSet,
@@ -138,6 +173,34 @@ namespace Nefarius.Devcon
             ref SP_DEVINFO_DATA DeviceInfoData,
             IntPtr DeviceInstallParams
         );
+        
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetupDiGetDeviceProperty(
+            IntPtr deviceInfoSet,
+            [In] ref SP_DEVINFO_DATA DeviceInfoData,
+            [In] ref DEVPROPKEY propertyKey,
+            [Out] out UInt32 propertyType,
+            IntPtr propertyBuffer,
+            UInt32 propertyBufferSize,
+            out UInt32 requiredSize,
+            UInt32 flags);
+        
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetupDiGetDeviceRegistryProperty(
+            IntPtr DeviceInfoSet,
+            [In] ref SP_DEVINFO_DATA  DeviceInfoData,
+            UInt32 Property,
+            [Out] out UInt32  PropertyRegDataType,
+            IntPtr PropertyBuffer,
+            UInt32 PropertyBufferSize,
+            [In,Out] ref UInt32 RequiredSize
+        );
+        
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetupDiRestartDevices(
+            IntPtr DeviceInfoSet,
+            [In] ref SP_DEVINFO_DATA DeviceInfoData
+        );
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern uint CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,
@@ -145,7 +208,7 @@ namespace Nefarius.Devcon
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         private static extern uint CM_Reenumerate_DevNode_Ex(uint dnDevInst, uint ulFlags, IntPtr hMachine);
-
+        
         [DllImport("newdev.dll", SetLastError = true)]
         private static extern bool DiInstallDevice(
             IntPtr hParent,
