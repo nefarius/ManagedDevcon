@@ -44,10 +44,10 @@ namespace Nefarius.Devcon
 
     public abstract class DevicePropertyDevice : DeviceProperty
     {
+        public static DeviceProperty DeviceDesc = new DevicePropertyDeviceDeviceDesc();
         public static DeviceProperty HardwareIds = new DevicePropertyDeviceHardwareIds();
         public static DeviceProperty CompatibleIds = new DevicePropertyDeviceCompatibleIds();
-        public static DeviceProperty DeviceDesc = new DevicePropertyDeviceDeviceDesc();
-
+        
         private static readonly Guid Category =
             Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}");
 
