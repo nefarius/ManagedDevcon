@@ -9,7 +9,7 @@ namespace Nefarius.Devcon
     ///     Managed wrapper for SetupAPI.
     /// </summary>
     /// <remarks>https://docs.microsoft.com/en-us/windows-hardware/drivers/install/setupapi</remarks>
-    public static partial class Devcon
+    public static class Devcon
     {
         /// <summary>
         ///     Searches for devices matching the provided class GUID and returns the device path and instance ID.
@@ -27,18 +27,20 @@ namespace Nefarius.Devcon
 
             try
             {
-                SP_DEVINFO_DATA deviceInterfaceData = new SP_DEVINFO_DATA(), da = new SP_DEVINFO_DATA();
+                SetupApiWrapper.SP_DEVINFO_DATA deviceInterfaceData = new SetupApiWrapper.SP_DEVINFO_DATA(),
+                    da = new SetupApiWrapper.SP_DEVINFO_DATA();
                 int bufferSize = 0, memberIndex = 0;
 
-                deviceInfoSet = SetupDiGetClassDevs(ref target, IntPtr.Zero, IntPtr.Zero,
-                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+                deviceInfoSet = SetupApiWrapper.SetupDiGetClassDevs(ref target, IntPtr.Zero, IntPtr.Zero,
+                    SetupApiWrapper.DIGCF_PRESENT | SetupApiWrapper.DIGCF_DEVICEINTERFACE);
 
                 deviceInterfaceData.cbSize = da.cbSize = Marshal.SizeOf(deviceInterfaceData);
 
-                while (SetupDiEnumDeviceInterfaces(deviceInfoSet, IntPtr.Zero, ref target, memberIndex,
+                while (SetupApiWrapper.SetupDiEnumDeviceInterfaces(deviceInfoSet, IntPtr.Zero, ref target, memberIndex,
                     ref deviceInterfaceData))
                 {
-                    SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, IntPtr.Zero, 0,
+                    SetupApiWrapper.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, IntPtr.Zero,
+                        0,
                         ref bufferSize, ref da);
                     {
                         detailDataBuffer = Marshal.AllocHGlobal(bufferSize);
@@ -46,7 +48,8 @@ namespace Nefarius.Devcon
                         Marshal.WriteInt32(detailDataBuffer,
                             IntPtr.Size == 4 ? 4 + Marshal.SystemDefaultCharSize : 8);
 
-                        if (SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData, detailDataBuffer,
+                        if (SetupApiWrapper.SetupDiGetDeviceInterfaceDetail(deviceInfoSet, ref deviceInterfaceData,
+                            detailDataBuffer,
                             bufferSize, ref bufferSize, ref da))
                         {
                             var pDevicePathName = detailDataBuffer + 4;
@@ -58,7 +61,7 @@ namespace Nefarius.Devcon
                                 var nBytes = 256;
                                 var ptrInstanceBuf = Marshal.AllocHGlobal(nBytes);
 
-                                CM_Get_Device_ID(da.Flags, ptrInstanceBuf, nBytes, 0);
+                                SetupApiWrapper.CM_Get_Device_ID(da.Flags, ptrInstanceBuf, nBytes, 0);
                                 instanceId = (Marshal.PtrToStringAuto(ptrInstanceBuf) ?? string.Empty).ToUpper();
 
                                 Marshal.FreeHGlobal(ptrInstanceBuf);
@@ -77,7 +80,7 @@ namespace Nefarius.Devcon
             finally
             {
                 if (deviceInfoSet != IntPtr.Zero)
-                    SetupDiDestroyDeviceInfoList(deviceInfoSet);
+                    SetupApiWrapper.SetupDiDestroyDeviceInfoList(deviceInfoSet);
             }
 
             path = instanceId = string.Empty;
@@ -93,7 +96,8 @@ namespace Nefarius.Devcon
         [UsedImplicitly]
         public static bool Install(string fullInfPath, out bool rebootRequired)
         {
-            return DiInstallDriver(IntPtr.Zero, fullInfPath, DIIRFLAG_FORCE_INF, out rebootRequired);
+            return SetupApiWrapper.DiInstallDriver(IntPtr.Zero, fullInfPath, SetupApiWrapper.DIIRFLAG_FORCE_INF,
+                out rebootRequired);
         }
 
         /// <summary>
@@ -107,39 +111,39 @@ namespace Nefarius.Devcon
         public static bool Create(string className, Guid classGuid, string node)
         {
             var deviceInfoSet = (IntPtr) (-1);
-            var deviceInfoData = new SP_DEVINFO_DATA();
+            var deviceInfoData = new SetupApiWrapper.SP_DEVINFO_DATA();
 
             try
             {
-                deviceInfoSet = SetupDiCreateDeviceInfoList(ref classGuid, IntPtr.Zero);
+                deviceInfoSet = SetupApiWrapper.SetupDiCreateDeviceInfoList(ref classGuid, IntPtr.Zero);
 
                 if (deviceInfoSet == (IntPtr) (-1))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
                 deviceInfoData.cbSize = Marshal.SizeOf(deviceInfoData);
 
-                if (!SetupDiCreateDeviceInfo(
+                if (!SetupApiWrapper.SetupDiCreateDeviceInfo(
                     deviceInfoSet,
                     className,
                     ref classGuid,
                     null,
                     IntPtr.Zero,
-                    DICD_GENERATE_ID,
+                    SetupApiWrapper.DICD_GENERATE_ID,
                     ref deviceInfoData
                 ))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (!SetupDiSetDeviceRegistryProperty(
+                if (!SetupApiWrapper.SetupDiSetDeviceRegistryProperty(
                     deviceInfoSet,
                     ref deviceInfoData,
-                    SPDRP_HARDWAREID,
+                    SetupApiWrapper.SPDRP_HARDWAREID,
                     node,
                     node.Length * 2
                 ))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
 
-                if (!SetupDiCallClassInstaller(
-                    DIF_REGISTERDEVICE,
+                if (!SetupApiWrapper.SetupDiCallClassInstaller(
+                    SetupApiWrapper.DIF_REGISTERDEVICE,
                     deviceInfoSet,
                     ref deviceInfoData
                 ))
@@ -148,7 +152,7 @@ namespace Nefarius.Devcon
             finally
             {
                 if (deviceInfoSet != (IntPtr) (-1))
-                    SetupDiDestroyDeviceInfoList(deviceInfoSet);
+                    SetupApiWrapper.SetupDiDestroyDeviceInfoList(deviceInfoSet);
             }
 
             return true;
@@ -181,17 +185,17 @@ namespace Nefarius.Devcon
 
             try
             {
-                var deviceInfoData = new SP_DEVINFO_DATA();
+                var deviceInfoData = new SetupApiWrapper.SP_DEVINFO_DATA();
                 deviceInfoData.cbSize = Marshal.SizeOf(deviceInfoData);
 
-                deviceInfoSet = SetupDiGetClassDevs(
+                deviceInfoSet = SetupApiWrapper.SetupDiGetClassDevs(
                     ref classGuid,
                     IntPtr.Zero,
                     IntPtr.Zero,
-                    DIGCF_PRESENT | DIGCF_DEVICEINTERFACE
+                    SetupApiWrapper.DIGCF_PRESENT | SetupApiWrapper.DIGCF_DEVICEINTERFACE
                 );
 
-                if (SetupDiOpenDeviceInfo(
+                if (SetupApiWrapper.SetupDiOpenDeviceInfo(
                     deviceInfoSet,
                     instanceId,
                     IntPtr.Zero,
@@ -199,16 +203,17 @@ namespace Nefarius.Devcon
                     ref deviceInfoData
                 ))
                 {
-                    var props = new SP_REMOVEDEVICE_PARAMS {ClassInstallHeader = new SP_CLASSINSTALL_HEADER()};
+                    var props = new SetupApiWrapper.SP_REMOVEDEVICE_PARAMS
+                        {ClassInstallHeader = new SetupApiWrapper.SP_CLASSINSTALL_HEADER()};
 
                     props.ClassInstallHeader.cbSize = Marshal.SizeOf(props.ClassInstallHeader);
-                    props.ClassInstallHeader.InstallFunction = DIF_REMOVE;
+                    props.ClassInstallHeader.InstallFunction = SetupApiWrapper.DIF_REMOVE;
 
-                    props.Scope = DI_REMOVEDEVICE_GLOBAL;
+                    props.Scope = SetupApiWrapper.DI_REMOVEDEVICE_GLOBAL;
                     props.HwProfile = 0x00;
 
                     // Prepare class (un-)installer
-                    if (SetupDiSetClassInstallParams(
+                    if (SetupApiWrapper.SetupDiSetClassInstallParams(
                         deviceInfoSet,
                         ref deviceInfoData,
                         ref props,
@@ -216,7 +221,8 @@ namespace Nefarius.Devcon
                     ))
                     {
                         // Invoke class installer with uninstall action
-                        if (!SetupDiCallClassInstaller(DIF_REMOVE, deviceInfoSet, ref deviceInfoData))
+                        if (!SetupApiWrapper.SetupDiCallClassInstaller(SetupApiWrapper.DIF_REMOVE, deviceInfoSet,
+                            ref deviceInfoData))
                             throw new Win32Exception(Marshal.GetLastWin32Error());
 
                         // Fill cbSize field
@@ -227,14 +233,16 @@ namespace Nefarius.Devcon
                         );
 
                         // Fill SP_DEVINSTALL_PARAMS struct
-                        if (!SetupDiGetDeviceInstallParams(deviceInfoSet, ref deviceInfoData, installParams))
+                        if (!SetupApiWrapper.SetupDiGetDeviceInstallParams(deviceInfoSet, ref deviceInfoData,
+                            installParams))
                             throw new Win32Exception(Marshal.GetLastWin32Error());
 
                         // Grab Flags field of SP_DEVINSTALL_PARAMS (offset of 32 bits)
                         var flags = Marshal.ReadInt32(installParams, Marshal.SizeOf(typeof(uint)));
 
                         // Test for restart/reboot flags being present
-                        rebootRequired = (flags & DI_NEEDRESTART) != 0 || (flags & DI_NEEDREBOOT) != 0;
+                        rebootRequired = (flags & SetupApiWrapper.DI_NEEDRESTART) != 0 ||
+                                         (flags & SetupApiWrapper.DI_NEEDREBOOT) != 0;
 
                         return true;
                     }
@@ -251,7 +259,7 @@ namespace Nefarius.Devcon
             finally
             {
                 if (deviceInfoSet != IntPtr.Zero)
-                    SetupDiDestroyDeviceInfoList(deviceInfoSet);
+                    SetupApiWrapper.SetupDiDestroyDeviceInfoList(deviceInfoSet);
                 Marshal.FreeHGlobal(installParams);
             }
         }
@@ -263,8 +271,9 @@ namespace Nefarius.Devcon
         [UsedImplicitly]
         public static bool Refresh()
         {
-            if (CM_Locate_DevNode_Ex(out var devRoot, IntPtr.Zero, 0, IntPtr.Zero) != CR_SUCCESS) return false;
-            return CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == CR_SUCCESS;
+            if (SetupApiWrapper.CM_Locate_DevNode_Ex(out var devRoot, IntPtr.Zero, 0, IntPtr.Zero) !=
+                SetupApiWrapper.CR_SUCCESS) return false;
+            return SetupApiWrapper.CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == SetupApiWrapper.CR_SUCCESS;
         }
 
         /// <summary>
@@ -281,8 +290,8 @@ namespace Nefarius.Devcon
         public static bool Update(string hardwareId, string fullInfPath,
             out bool rebootRequired)
         {
-            return UpdateDriverForPlugAndPlayDevices(IntPtr.Zero, hardwareId, fullInfPath,
-                INSTALLFLAG_FORCE | INSTALLFLAG_NONINTERACTIVE, out rebootRequired);
+            return SetupApiWrapper.UpdateDriverForPlugAndPlayDevices(IntPtr.Zero, hardwareId, fullInfPath,
+                SetupApiWrapper.INSTALLFLAG_FORCE | SetupApiWrapper.INSTALLFLAG_NONINTERACTIVE, out rebootRequired);
         }
     }
 }

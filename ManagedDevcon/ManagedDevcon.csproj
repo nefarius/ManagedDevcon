@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <PropertyGroup>
@@ -70,5 +70,6 @@
     <PackageReference Include="JetBrains.Annotations" Version="2020.3.0">
 	  <PrivateAssets>all</PrivateAssets>
 	</PackageReference>
+    <PackageReference Include="PInvoke.Kernel32" Version="0.7.78" />
   </ItemGroup>
 </Project>
