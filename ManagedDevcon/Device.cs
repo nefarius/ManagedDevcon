@@ -110,6 +110,54 @@ namespace Nefarius.Devcon
             return new Device(instanceId, flags);
         }
 
+        [UsedImplicitly]
+        private SetupApiWrapper.ConfigManagerResult GetProperty(
+            SetupApiWrapper.DEVPROPKEY propertyKey,
+            out SetupApiWrapper.DevPropType propertyType,
+            out IntPtr valueBuffer,
+            out uint valueBufferSize
+            )
+        {
+            valueBuffer = IntPtr.Zero;
+            valueBufferSize = 0;
+            propertyType = SetupApiWrapper.DevPropType.DEVPROP_TYPE_EMPTY;
+
+            var ret = SetupApiWrapper.CM_Get_DevNode_Property(
+                _instanceHandle,
+                ref propertyKey,
+                out _,
+                IntPtr.Zero,
+                ref valueBufferSize,
+                0
+            );
+
+            if (ret != SetupApiWrapper.ConfigManagerResult.BufferSmall
+                && ret != SetupApiWrapper.ConfigManagerResult.Success)
+            {
+                return ret;
+            }
+
+            valueBuffer = Marshal.AllocHGlobal((int)valueBufferSize);
+
+            ret = SetupApiWrapper.CM_Get_DevNode_Property(
+                _instanceHandle,
+                ref propertyKey,
+                out propertyType,
+                valueBuffer,
+                ref valueBufferSize,
+                0
+            );
+
+            if (ret != SetupApiWrapper.ConfigManagerResult.Success)
+            {
+                Marshal.FreeHGlobal(valueBuffer);
+                valueBuffer = IntPtr.Zero;
+                return ret;
+            }
+
+            return ret;
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)

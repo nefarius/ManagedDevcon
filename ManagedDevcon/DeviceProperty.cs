@@ -23,6 +23,11 @@ namespace Nefarius.Devcon
         {
             throw new NotImplementedException();
         }
+
+        internal SetupApiWrapper.DEVPROPKEY ToNativeType()
+        {
+            return new SetupApiWrapper.DEVPROPKEY(CategoryGuid, PropertyIdentifier);
+        }
     }
 
     /// <summary>
@@ -47,32 +52,35 @@ namespace Nefarius.Devcon
         public static DeviceProperty DeviceDesc = new DevicePropertyDeviceDeviceDesc();
         public static DeviceProperty HardwareIds = new DevicePropertyDeviceHardwareIds();
         public static DeviceProperty CompatibleIds = new DevicePropertyDeviceCompatibleIds();
-        
-        private static readonly Guid Category =
-            Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}");
 
-        protected DevicePropertyDevice(Guid categoryGuid, uint propertyIdentifier) : base(categoryGuid,
-            propertyIdentifier)
+        private DevicePropertyDevice(uint propertyIdentifier) : this(
+            Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}"), 
+            propertyIdentifier
+            )
         {
         }
-        
+
+        protected DevicePropertyDevice(Guid categoryGuid, uint propertyIdentifier) : base(categoryGuid, propertyIdentifier)
+        {
+        }
+
         private class DevicePropertyDeviceDeviceDesc : DevicePropertyDevice
         {
-            public DevicePropertyDeviceDeviceDesc() : base(Category, 2)
+            public DevicePropertyDeviceDeviceDesc() : base(2)
             {
             }
         }
 
         private class DevicePropertyDeviceHardwareIds : DevicePropertyDevice
         {
-            public DevicePropertyDeviceHardwareIds() : base(Category, 3)
+            public DevicePropertyDeviceHardwareIds() : base(3)
             {
             }
         }
 
         private class DevicePropertyDeviceCompatibleIds : DevicePropertyDevice
         {
-            public DevicePropertyDeviceCompatibleIds() : base(Category, 4)
+            public DevicePropertyDeviceCompatibleIds() : base(4)
             {
             }
         }

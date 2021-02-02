@@ -349,7 +349,7 @@ namespace Nefarius.Devcon
             [In] ref DEVPROPKEY PropertyKey,
             [Out] out DevPropType PropertyType,
             [In][Out]IntPtr PropertyBuffer,
-            [Out] out uint PropertyBufferSize,
+            [In][Out] ref uint PropertyBufferSize,
             [In] uint ulFlags // reserved
         );
 
