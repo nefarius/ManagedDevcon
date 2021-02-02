@@ -21,6 +21,9 @@ namespace Nefarius.Devcon
         CancelRemove
     }
 
+    /// <summary>
+    ///     Describes an instance of a PNP device.
+    /// </summary>
     public class Device : IDisposable
     {
         private uint _instanceHandle;
