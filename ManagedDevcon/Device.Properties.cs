@@ -86,14 +86,14 @@ namespace Nefarius.Devcon
                 // Regular strings
                 if (managedType == typeof(string))
                 {
-                    var value = Marshal.PtrToStringAuto(buffer);
+                    var value = Marshal.PtrToStringUni(buffer);
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
                 // Double-null-terminated string to list
                 if (managedType == typeof(string[]))
                 {
-                    var value = Marshal.PtrToStringAuto(buffer, (int) size / 2).TrimEnd('\0').Split('\0').ToArray();
+                    var value = Marshal.PtrToStringUni(buffer, (int) size / 2).TrimEnd('\0').Split('\0').ToArray();
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
