@@ -314,51 +314,67 @@ namespace Nefarius.Devcon
 
         #region Cfgmgr32
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern ConfigManagerResult CM_Get_Device_ID(uint DevInst, IntPtr Buffer, uint BufferLen, uint Flags);
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Get_Device_ID(
+            uint DevInst,
+            IntPtr Buffer,
+            uint BufferLen,
+            uint Flags
+        );
 
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Locate_DevNode(
+            ref uint pdnDevInst,
+            string pDeviceID,
+            int ulFlags
+        );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern ConfigManagerResult CM_Locate_DevNode(ref uint pdnDevInst, string pDeviceID, int ulFlags);
-        
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern ConfigManagerResult CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,
-            IntPtr hMachine);
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Locate_DevNode_Ex(
+            out uint pdnDevInst,
+            IntPtr pDeviceID,
+            uint ulFlags,
+            IntPtr hMachine
+        );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern ConfigManagerResult CM_Reenumerate_DevNode_Ex(uint dnDevInst, uint ulFlags, IntPtr hMachine);
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Reenumerate_DevNode_Ex(
+            uint dnDevInst,
+            uint ulFlags,
+            IntPtr hMachine
+        );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern ConfigManagerResult CM_Get_Device_ID_Size(
             ref uint pulLen,
             uint dnDevInst,
             uint ulFlags
         );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern ConfigManagerResult CM_Get_DevNode_Property_Keys(
-            uint devInst, 
+            uint devInst,
             [Out] DEVPROPKEY[] propertyKeyArray,
-            ref uint propertyKeyCount, 
+            ref uint propertyKeyCount,
             uint zeroFlags
         );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern ConfigManagerResult CM_Get_DevNode_Property(
             uint devInst,
             [In] ref DEVPROPKEY PropertyKey,
             [Out] out DevPropType PropertyType,
-            [In][Out]IntPtr PropertyBuffer,
-            [In][Out] ref uint PropertyBufferSize,
+            [In] [Out] IntPtr PropertyBuffer,
+            [In] [Out] ref uint PropertyBufferSize,
             [In] uint ulFlags // reserved
         );
 
-        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern ConfigManagerResult CM_Set_DevNode_Property(
             uint devInst,
             [In] ref DEVPROPKEY PropertyKey,
             [In] DevPropType PropertyType,
-            [In]IntPtr PropertyBuffer,
+            [In] IntPtr PropertyBuffer,
             [In] uint PropertyBufferSize,
             [In] uint ulFlags // reserved
         );
