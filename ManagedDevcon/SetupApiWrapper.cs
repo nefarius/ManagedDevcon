@@ -66,6 +66,11 @@ namespace Nefarius.Devcon
         [StructLayout(LayoutKind.Sequential)]
         internal struct DEVPROPKEY
         {
+            public DEVPROPKEY(Guid guid, uint pid)
+            {
+                this.fmtid = guid;
+                this.pid = pid;
+            }
             public Guid fmtid;
             public UInt32 pid;
         }
@@ -148,6 +153,41 @@ namespace Nefarius.Devcon
             InvalidConflictList = 0x00000039,
             InvalidIndex = 0x0000003A,
             InvalidStructureSize = 0x0000003B
+        }
+
+        internal const int DEVPROP_TYPEMOD_ARRAY                 =  0x00001000;  // array of fixed-sized data elements
+        internal const int DEVPROP_TYPEMOD_LIST                  =  0x00002000;  // list of variable-sized data elements
+
+        internal enum DevPropType : uint
+        {
+            DEVPROP_TYPE_EMPTY = 0x00000000,  // nothing, no property data
+            DEVPROP_TYPE_NULL = 0x00000001,  // null property data
+            DEVPROP_TYPE_SBYTE = 0x00000002,  // 8-bit signed int (SBYTE)
+            DEVPROP_TYPE_BYTE = 0x00000003,  // 8-bit unsigned int (BYTE)
+            DEVPROP_TYPE_INT16 = 0x00000004,  // 16-bit signed int (SHORT)
+            DEVPROP_TYPE_UINT16 = 0x00000005,  // 16-bit unsigned int (USHORT)
+            DEVPROP_TYPE_INT32 = 0x00000006,  // 32-bit signed int (LONG)
+            DEVPROP_TYPE_UINT32 = 0x00000007,  // 32-bit unsigned int (ULONG)
+            DEVPROP_TYPE_INT64 = 0x00000008,  // 64-bit signed int (LONG64)
+            DEVPROP_TYPE_UINT64 = 0x00000009,  // 64-bit unsigned int (ULONG64)
+            DEVPROP_TYPE_FLOAT = 0x0000000A,  // 32-bit floating-point (FLOAT)
+            DEVPROP_TYPE_DOUBLE = 0x0000000B,  // 64-bit floating-point (DOUBLE)
+            DEVPROP_TYPE_DECIMAL = 0x0000000C,  // 128-bit data (DECIMAL)
+            DEVPROP_TYPE_GUID = 0x0000000D,  // 128-bit unique identifier (GUID)
+            DEVPROP_TYPE_CURRENCY = 0x0000000E,  // 64 bit signed int currency value (CURRENCY)
+            DEVPROP_TYPE_DATE = 0x0000000F,  // date (DATE)
+            DEVPROP_TYPE_FILETIME = 0x00000010,  // file time (FILETIME)
+            DEVPROP_TYPE_BOOLEAN = 0x00000011,  // 8-bit boolean (DEVPROP_BOOLEAN)
+            DEVPROP_TYPE_STRING = 0x00000012,  // null-terminated string
+            DEVPROP_TYPE_STRING_LIST = (DEVPROP_TYPE_STRING | DEVPROP_TYPEMOD_LIST), // multi-sz string list
+            DEVPROP_TYPE_SECURITY_DESCRIPTOR = 0x00000013,  // self-relative binary SECURITY_DESCRIPTOR
+            DEVPROP_TYPE_SECURITY_DESCRIPTOR_STRING = 0x00000014,  // security descriptor string (SDDL format)
+            DEVPROP_TYPE_DEVPROPKEY = 0x00000015,  // device property key (DEVPROPKEY)
+            DEVPROP_TYPE_DEVPROPTYPE = 0x00000016,  // device property type (DEVPROPTYPE)
+            DEVPROP_TYPE_BINARY = (DEVPROP_TYPE_BYTE | DEVPROP_TYPEMOD_ARRAY),  // custom binary data
+            DEVPROP_TYPE_ERROR = 0x00000017,  // 32-bit Win32 system error code
+            DEVPROP_TYPE_NTSTATUS = 0x00000018,  // 32-bit NTSTATUS code
+            DEVPROP_TYPE_STRING_INDIRECT = 0x00000019  // string resource (@[path\]<dllname>,-<strId>)
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -274,25 +314,53 @@ namespace Nefarius.Devcon
 
         #region Cfgmgr32
 
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern ConfigManagerResult CM_Get_Device_ID(uint DevInst, IntPtr Buffer, uint BufferLen, uint Flags);
 
 
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern ConfigManagerResult CM_Locate_DevNode(ref uint pdnDevInst, string pDeviceID, int ulFlags);
         
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern ConfigManagerResult CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,
             IntPtr hMachine);
 
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern ConfigManagerResult CM_Reenumerate_DevNode_Ex(uint dnDevInst, uint ulFlags, IntPtr hMachine);
 
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         internal static extern ConfigManagerResult CM_Get_Device_ID_Size(
             ref uint pulLen,
             uint dnDevInst,
             uint ulFlags
+        );
+
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern ConfigManagerResult CM_Get_DevNode_Property_Keys(
+            uint devInst, 
+            [Out] DEVPROPKEY[] propertyKeyArray,
+            ref uint propertyKeyCount, 
+            uint zeroFlags
+        );
+
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern ConfigManagerResult CM_Get_DevNode_Property(
+            uint devInst,
+            [In] ref DEVPROPKEY PropertyKey,
+            [Out] out DevPropType PropertyType,
+            [In][Out]IntPtr PropertyBuffer,
+            [Out] out uint PropertyBufferSize,
+            [In] uint ulFlags // reserved
+        );
+
+        [DllImport("CfgMgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern ConfigManagerResult CM_Set_DevNode_Property(
+            uint devInst,
+            [In] ref DEVPROPKEY PropertyKey,
+            [In] DevPropType PropertyType,
+            [In]IntPtr PropertyBuffer,
+            [In] uint PropertyBufferSize,
+            [In] uint ulFlags // reserved
         );
 
         #endregion
