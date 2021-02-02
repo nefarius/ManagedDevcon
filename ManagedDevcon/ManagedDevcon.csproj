@@ -70,6 +70,5 @@
     <PackageReference Include="JetBrains.Annotations" Version="2020.3.0">
 	  <PrivateAssets>all</PrivateAssets>
 	</PackageReference>
-    <PackageReference Include="PInvoke.Kernel32" Version="0.7.78" />
   </ItemGroup>
 </Project>
