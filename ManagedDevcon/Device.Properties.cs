@@ -129,6 +129,13 @@ namespace Nefarius.Devcon
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
+                // FILETIME/DateTimeOffset
+                if (managedType == typeof(DateTimeOffset))
+                {
+                    var value = DateTimeOffset.FromFileTime(Marshal.ReadInt64(buffer));
+                    return (T) Convert.ChangeType(value, typeof(T));
+                }
+
                 #endregion
 
                 throw new NotImplementedException("Type not supported.");
