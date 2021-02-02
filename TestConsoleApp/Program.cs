@@ -11,7 +11,7 @@ namespace TestConsoleApp
     {
         static void Main(string[] args)
         {
-            var device = Device.GetDeviceByInstanceId("USB\\VID_0A12&PID_0001\\8&1203F332&0&6");
+            var device = Device.GetDeviceByInstanceId("USB\\VID_0489&PID_E052\\3C77E6CD11E6");
         }
     }
 }

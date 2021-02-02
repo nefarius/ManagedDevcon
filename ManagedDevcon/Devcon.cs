@@ -61,7 +61,7 @@ namespace Nefarius.Devcon
                                 var nBytes = 256;
                                 var ptrInstanceBuf = Marshal.AllocHGlobal(nBytes);
 
-                                SetupApiWrapper.CM_Get_Device_ID(da.Flags, ptrInstanceBuf, nBytes, 0);
+                                SetupApiWrapper.CM_Get_Device_ID(da.DevInst, ptrInstanceBuf, (uint)nBytes, 0);
                                 instanceId = (Marshal.PtrToStringAuto(ptrInstanceBuf) ?? string.Empty).ToUpper();
 
                                 Marshal.FreeHGlobal(ptrInstanceBuf);
@@ -272,8 +272,8 @@ namespace Nefarius.Devcon
         public static bool Refresh()
         {
             if (SetupApiWrapper.CM_Locate_DevNode_Ex(out var devRoot, IntPtr.Zero, 0, IntPtr.Zero) !=
-                SetupApiWrapper.CR_SUCCESS) return false;
-            return SetupApiWrapper.CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == SetupApiWrapper.CR_SUCCESS;
+                SetupApiWrapper.ConfigManagerResult.Success) return false;
+            return SetupApiWrapper.CM_Reenumerate_DevNode_Ex(devRoot, 0, IntPtr.Zero) == SetupApiWrapper.ConfigManagerResult.Success;
         }
 
         /// <summary>

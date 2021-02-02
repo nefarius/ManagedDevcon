@@ -35,7 +35,7 @@ namespace Nefarius.Devcon
         {
             internal int cbSize;
             internal readonly Guid ClassGuid;
-            internal readonly int Flags;
+            internal readonly uint DevInst;
             internal readonly IntPtr Reserved;
         }
 
@@ -79,13 +79,77 @@ namespace Nefarius.Devcon
 
         internal const uint CM_REENUMERATE_ASYNCHRONOUS = 0x00000004;
 
-        internal const uint CR_SUCCESS = 0x00000000;
-
         internal const int CM_LOCATE_DEVNODE_NORMAL = 0x00000000;
         internal const int CM_LOCATE_DEVNODE_PHANTOM = 0x00000001;
         internal const int CM_LOCATE_DEVNODE_CANCELREMOVE = 0x00000002;
         internal const int CM_LOCATE_DEVNODE_NOVALIDATION = 0x00000004;
-        
+
+        internal enum ConfigManagerResult : uint
+        {
+            Success = 0x00000000,
+            Default = 0x00000001,
+            OutOfMemory = 0x00000002,
+            InvalidPointer = 0x00000003,
+            InvalidFlag = 0x00000004,
+            InvalidDevnode = 0x00000005,
+            InvalidDevinst = InvalidDevnode,
+            InvalidResDes = 0x00000006,
+            InvalidLogConf = 0x00000007,
+            InvalidArbitrator = 0x00000008,
+            InvalidNodelist = 0x00000009,
+            DevnodeHasReqs = 0x0000000A,
+            DevinstHasReqs = DevnodeHasReqs,
+            InvalidResourceid = 0x0000000B,
+            NoSuchDevnode = 0x0000000D,
+            NoSuchDevinst = NoSuchDevnode,
+            NoMoreLogConf = 0x0000000E,
+            NoMoreResDes = 0x0000000F,
+            AlreadySuchDevnode = 0x00000010,
+            AlreadySuchDevinst = AlreadySuchDevnode,
+            InvalidRangeList = 0x00000011,
+            InvalidRange = 0x00000012,
+            Failure = 0x00000013,
+            NoSuchLogicalDev = 0x00000014,
+            CreateBlocked = 0x00000015,
+            RemoveVetoed = 0x00000017,
+            ApmVetoed = 0x00000018,
+            InvalidLoadType = 0x00000019,
+            BufferSmall = 0x0000001A,
+            NoArbitrator = 0x0000001B,
+            NoRegistryHandle = 0x0000001C,
+            RegistryError = 0x0000001D,
+            InvalidDeviceId = 0x0000001E,
+            InvalidData = 0x0000001F,
+            InvalidApi = 0x00000020,
+            DevloaderNotReady = 0x00000021,
+            NeedRestart = 0x00000022,
+            NoMoreHwProfiles = 0x00000023,
+            DeviceNotThere = 0x00000024,
+            NoSuchValue = 0x00000025,
+            WrongType = 0x00000026,
+            InvalidPriority = 0x00000027,
+            NotDisableable = 0x00000028,
+            FreeResources = 0x00000029,
+            QueryVetoed = 0x0000002A,
+            CantShareIrq = 0x0000002B,
+            NoDependent = 0x0000002C,
+            SameResources = 0x0000002D,
+            NoSuchRegistryKey = 0x0000002E,
+            InvalidMachinename = 0x0000002F,   // NT ONLY
+            RemoteCommFailure = 0x00000030,   // NT ONLY
+            MachineUnavailable = 0x00000031,   // NT ONLY
+            NoCmServices = 0x00000032,   // NT ONLY
+            AccessDenied = 0x00000033,   // NT ONLY
+            CallNotImplemented = 0x00000034,
+            InvalidProperty = 0x00000035,
+            DeviceInterfaceActive = 0x00000036,
+            NoSuchDeviceInterface = 0x00000037,
+            InvalidReferenceString = 0x00000038,
+            InvalidConflictList = 0x00000039,
+            InvalidIndex = 0x0000003A,
+            InvalidStructureSize = 0x0000003B
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct SP_DRVINFO_DATA
         {
@@ -116,6 +180,8 @@ namespace Nefarius.Devcon
         #endregion
 
         #region Interop Definitions
+
+        #region SetupAPI
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern IntPtr SetupDiCreateDeviceInfoList(ref Guid ClassGuid, IntPtr hwndParent);
@@ -154,9 +220,6 @@ namespace Nefarius.Devcon
             ref SP_DEVINFO_DATA DeviceInterfaceData, IntPtr DeviceInterfaceDetailData,
             int DeviceInterfaceDetailDataSize,
             ref int RequiredSize, ref SP_DEVINFO_DATA DeviceInfoData);
-
-        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern int CM_Get_Device_ID(int DevInst, IntPtr Buffer, int BufferLen, int Flags);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
         internal static extern bool SetupDiOpenDeviceInfo(IntPtr DeviceInfoSet, string DeviceInstanceId,
@@ -207,16 +270,35 @@ namespace Nefarius.Devcon
             [In] ref SP_DEVINFO_DATA DeviceInfoData
         );
 
+        #endregion
+
+        #region Cfgmgr32
+
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern int CM_Locate_DevNode(ref uint pdnDevInst, string pDeviceID, int ulFlags);
+        internal static extern ConfigManagerResult CM_Get_Device_ID(uint DevInst, IntPtr Buffer, uint BufferLen, uint Flags);
+
+
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Locate_DevNode(ref uint pdnDevInst, string pDeviceID, int ulFlags);
         
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern uint CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,
+        internal static extern ConfigManagerResult CM_Locate_DevNode_Ex(out uint pdnDevInst, IntPtr pDeviceID, uint ulFlags,
             IntPtr hMachine);
 
         [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        internal static extern uint CM_Reenumerate_DevNode_Ex(uint dnDevInst, uint ulFlags, IntPtr hMachine);
-        
+        internal static extern ConfigManagerResult CM_Reenumerate_DevNode_Ex(uint dnDevInst, uint ulFlags, IntPtr hMachine);
+
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        internal static extern ConfigManagerResult CM_Get_Device_ID_Size(
+            ref uint pulLen,
+            uint dnDevInst,
+            uint ulFlags
+        );
+
+        #endregion
+
+        #region Newdev
+
         [DllImport("newdev.dll", SetLastError = true)]
         internal static extern bool DiInstallDevice(
             IntPtr hParent,
@@ -241,6 +323,8 @@ namespace Nefarius.Devcon
             [In] uint InstallFlags,
             [Out] out bool bRebootRequired
         );
+
+        #endregion
 
         #endregion
     }
