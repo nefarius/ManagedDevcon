@@ -8,15 +8,21 @@ namespace Nefarius.Devcon
     public enum DeviceLocationFlags
     {
         /// <summary>
-        ///     The function retrieves the device instance handle for the specified device only if the device is currently configured in the device tree.
+        ///     The function retrieves the device instance handle for the specified device only if the device is currently
+        ///     configured in the device tree.
         /// </summary>
         Normal,
+
         /// <summary>
-        ///     The function retrieves a device instance handle for the specified device if the device is currently configured in the device tree or the device is a nonpresent device that is not currently configured in the device tree.
+        ///     The function retrieves a device instance handle for the specified device if the device is currently configured in
+        ///     the device tree or the device is a nonpresent device that is not currently configured in the device tree.
         /// </summary>
         Phantom,
+
         /// <summary>
-        ///     The function retrieves a device instance handle for the specified device if the device is currently configured in the device tree or in the process of being removed from the device tree. If the device is in the process of being removed, the function cancels the removal of the device.
+        ///     The function retrieves a device instance handle for the specified device if the device is currently configured in
+        ///     the device tree or in the process of being removed from the device tree. If the device is in the process of being
+        ///     removed, the function cancels the removal of the device.
         /// </summary>
         CancelRemove
     }
@@ -26,19 +32,15 @@ namespace Nefarius.Devcon
     /// </summary>
     public partial class Device : IDisposable
     {
-        private uint _instanceHandle;
-        private bool disposedValue;
-
-        public string InstanceId { get; }
-
-        public string DeviceId { get; }
+        private readonly uint _instanceHandle;
+        private bool _disposedValue;
 
         protected Device(string instanceId, DeviceLocationFlags flags)
         {
             InstanceId = instanceId;
-            int iFlags = SetupApiWrapper.CM_LOCATE_DEVNODE_NORMAL;
+            var iFlags = SetupApiWrapper.CM_LOCATE_DEVNODE_NORMAL;
 
-            switch(flags)
+            switch (flags)
             {
                 case DeviceLocationFlags.Normal:
                     iFlags = SetupApiWrapper.CM_LOCATE_DEVNODE_NORMAL;
@@ -58,9 +60,7 @@ namespace Nefarius.Devcon
             );
 
             if (ret != SetupApiWrapper.ConfigManagerResult.Success)
-            {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
 
             uint nBytes = 0;
 
@@ -71,27 +71,23 @@ namespace Nefarius.Devcon
             );
 
             if (ret != SetupApiWrapper.ConfigManagerResult.Success)
-            {
                 throw new Win32Exception(Marshal.GetLastWin32Error());
-            }
 
-            nBytes += (uint)Marshal.SizeOf(typeof(char));
+            nBytes += (uint) Marshal.SizeOf(typeof(char));
 
-            var ptrInstanceBuf = Marshal.AllocHGlobal((int)nBytes);
+            var ptrInstanceBuf = Marshal.AllocHGlobal((int) nBytes);
 
             try
             {
                 ret = SetupApiWrapper.CM_Get_Device_ID(
-                    _instanceHandle, 
-                    ptrInstanceBuf, 
-                    nBytes, 
+                    _instanceHandle,
+                    ptrInstanceBuf,
+                    nBytes,
                     0
                 );
 
                 if (ret != SetupApiWrapper.ConfigManagerResult.Success)
-                {
                     throw new Win32Exception(Marshal.GetLastWin32Error());
-                }
 
                 DeviceId = (Marshal.PtrToStringAuto(ptrInstanceBuf) ?? string.Empty).ToUpper();
             }
@@ -99,6 +95,17 @@ namespace Nefarius.Devcon
             {
                 Marshal.FreeHGlobal(ptrInstanceBuf);
             }
+        }
+
+        public string InstanceId { get; }
+
+        public string DeviceId { get; }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         [UsedImplicitly]
@@ -119,7 +126,7 @@ namespace Nefarius.Devcon
             out SetupApiWrapper.DevPropType propertyType,
             out IntPtr valueBuffer,
             out uint valueBufferSize
-            )
+        )
         {
             valueBuffer = IntPtr.Zero;
             valueBufferSize = 0;
@@ -136,11 +143,9 @@ namespace Nefarius.Devcon
 
             if (ret != SetupApiWrapper.ConfigManagerResult.BufferSmall
                 && ret != SetupApiWrapper.ConfigManagerResult.Success)
-            {
                 return ret;
-            }
 
-            valueBuffer = Marshal.AllocHGlobal((int)valueBufferSize);
+            valueBuffer = Marshal.AllocHGlobal((int) valueBufferSize);
 
             ret = SetupApiWrapper.CM_Get_DevNode_Property(
                 _instanceHandle,
@@ -163,7 +168,7 @@ namespace Nefarius.Devcon
 
         protected virtual void Dispose(bool disposing)
         {
-            if (!disposedValue)
+            if (!_disposedValue)
             {
                 if (disposing)
                 {
@@ -172,21 +177,14 @@ namespace Nefarius.Devcon
 
                 // TODO: free unmanaged resources (unmanaged objects) and override finalizer
                 // TODO: set large fields to null
-                disposedValue = true;
+                _disposedValue = true;
             }
         }
 
         ~Device()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: false);
-        }
-
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            Dispose(false);
         }
     }
 }

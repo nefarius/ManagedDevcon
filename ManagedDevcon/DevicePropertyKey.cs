@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using JetBrains.Annotations;
 
 namespace Nefarius.Devcon
@@ -11,10 +10,10 @@ namespace Nefarius.Devcon
     public abstract class DevicePropertyKey : IComparable
     {
         protected DevicePropertyKey(
-            Guid categoryGuid, 
+            Guid categoryGuid,
             uint propertyIdentifier,
             Type propertyType
-            )
+        )
         {
             CategoryGuid = categoryGuid;
             PropertyIdentifier = propertyIdentifier;
@@ -43,17 +42,17 @@ namespace Nefarius.Devcon
     /// </summary>
     public class CustomDeviceProperty : DevicePropertyKey
     {
-        protected CustomDeviceProperty(Guid categoryGuid, uint propertyIdentifier, Type propertyType) 
+        protected CustomDeviceProperty(Guid categoryGuid, uint propertyIdentifier, Type propertyType)
             : base(categoryGuid, propertyIdentifier, propertyType)
         {
         }
 
         [UsedImplicitly]
         public static DevicePropertyKey CreateCustomDeviceProperty(
-            Guid categoryGuid, 
+            Guid categoryGuid,
             uint propertyIdentifier,
             Type propertyType
-            )
+        )
         {
             return new CustomDeviceProperty(categoryGuid, propertyIdentifier, propertyType);
         }
@@ -61,19 +60,24 @@ namespace Nefarius.Devcon
 
     public abstract class DevicePropertyDevice : DevicePropertyKey
     {
+        [UsedImplicitly]
         public static DevicePropertyKey DeviceDesc = new DevicePropertyDeviceDeviceDesc();
+        
+        [UsedImplicitly]
         public static DevicePropertyKey HardwareIds = new DevicePropertyDeviceHardwareIds();
+        
+        [UsedImplicitly]
         public static DevicePropertyKey CompatibleIds = new DevicePropertyDeviceCompatibleIds();
 
         private DevicePropertyDevice(uint propertyIdentifier, Type propertyType) : this(
-            Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}"), 
+            Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}"),
             propertyIdentifier,
             propertyType
-            )
+        )
         {
         }
 
-        protected DevicePropertyDevice(Guid categoryGuid, uint propertyIdentifier, Type propertyType) 
+        protected DevicePropertyDevice(Guid categoryGuid, uint propertyIdentifier, Type propertyType)
             : base(categoryGuid, propertyIdentifier, propertyType)
         {
         }
