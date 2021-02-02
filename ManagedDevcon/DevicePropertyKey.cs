@@ -60,14 +60,17 @@ namespace Nefarius.Devcon
 
     public abstract class DevicePropertyDevice : DevicePropertyKey
     {
-        [UsedImplicitly]
-        public static DevicePropertyKey DeviceDesc = new DevicePropertyDeviceDeviceDesc();
-        
-        [UsedImplicitly]
-        public static DevicePropertyKey HardwareIds = new DevicePropertyDeviceHardwareIds();
-        
-        [UsedImplicitly]
-        public static DevicePropertyKey CompatibleIds = new DevicePropertyDeviceCompatibleIds();
+        [UsedImplicitly] public static DevicePropertyKey DeviceDesc = new DevicePropertyDeviceDeviceDesc();
+
+        [UsedImplicitly] public static DevicePropertyKey HardwareIds = new DevicePropertyDeviceHardwareIds();
+
+        [UsedImplicitly] public static DevicePropertyKey CompatibleIds = new DevicePropertyDeviceCompatibleIds();
+
+        [UsedImplicitly] public static DevicePropertyKey Manufacturer = new DevicePropertyDeviceManufacturer();
+
+        [UsedImplicitly] public static DevicePropertyKey FriendlyName = new DevicePropertyDeviceFriendlyName();
+
+        [UsedImplicitly] public static DevicePropertyKey EnumeratorName = new DevicePropertyDeviceEnumeratorName();
 
         private DevicePropertyDevice(uint propertyIdentifier, Type propertyType) : this(
             Guid.Parse("{0xa45c254e, 0xdf1c, 0x4efd, {0x80, 0x20, 0x67, 0xd1, 0x46, 0xa8, 0x50, 0xe0}}"),
@@ -99,6 +102,27 @@ namespace Nefarius.Devcon
         private class DevicePropertyDeviceCompatibleIds : DevicePropertyDevice
         {
             public DevicePropertyDeviceCompatibleIds() : base(4, typeof(string[]))
+            {
+            }
+        }
+
+        private class DevicePropertyDeviceManufacturer : DevicePropertyDevice
+        {
+            public DevicePropertyDeviceManufacturer() : base(13, typeof(string))
+            {
+            }
+        }
+
+        private class DevicePropertyDeviceFriendlyName : DevicePropertyDevice
+        {
+            public DevicePropertyDeviceFriendlyName() : base(14, typeof(string))
+            {
+            }
+        }
+
+        private class DevicePropertyDeviceEnumeratorName : DevicePropertyDevice
+        {
+            public DevicePropertyDeviceEnumeratorName() : base(24, typeof(string))
             {
             }
         }
