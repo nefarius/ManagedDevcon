@@ -24,7 +24,7 @@ namespace Nefarius.Devcon
     /// <summary>
     ///     Describes an instance of a PNP device.
     /// </summary>
-    public class Device : IDisposable
+    public partial class Device : IDisposable
     {
         private uint _instanceHandle;
         private bool disposedValue;
