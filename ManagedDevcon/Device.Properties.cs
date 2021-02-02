@@ -97,6 +97,38 @@ namespace Nefarius.Devcon
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
+                // Byte & SByte
+                if (managedType == typeof(sbyte)
+                    || managedType == typeof(byte))
+                {
+                    var value = Marshal.ReadByte(buffer);
+                    return (T) Convert.ChangeType(value, typeof(T));
+                }
+
+                // (U)Int16
+                if (managedType == typeof(Int16)
+                    || managedType == typeof(UInt16))
+                {
+                    var value = Marshal.ReadInt16(buffer);
+                    return (T) Convert.ChangeType(value, typeof(T));
+                }
+
+                // (U)Int32
+                if (managedType == typeof(Int32)
+                    || managedType == typeof(UInt32))
+                {
+                    var value = Marshal.ReadInt32(buffer);
+                    return (T) Convert.ChangeType(value, typeof(T));
+                }
+
+                // (U)Int64
+                if (managedType == typeof(Int64)
+                    || managedType == typeof(UInt64))
+                {
+                    var value = Marshal.ReadInt64(buffer);
+                    return (T) Convert.ChangeType(value, typeof(T));
+                }
+
                 #endregion
 
                 throw new NotImplementedException("Type not supported.");
