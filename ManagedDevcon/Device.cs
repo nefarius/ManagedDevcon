@@ -59,6 +59,9 @@ namespace Nefarius.Devcon
                 iFlags
             );
 
+            if (ret == SetupApiWrapper.ConfigManagerResult.NoSuchDevinst)
+                throw new ArgumentException("The supplied instance wasn't found.", nameof(flags));
+
             if (ret != SetupApiWrapper.ConfigManagerResult.Success)
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
@@ -97,8 +100,14 @@ namespace Nefarius.Devcon
             }
         }
 
+        /// <summary>
+        ///     The instance ID of the device.
+        /// </summary>
         public string InstanceId { get; }
 
+        /// <summary>
+        ///     The device ID.
+        /// </summary>
         public string DeviceId { get; }
 
         public void Dispose()
@@ -120,50 +129,67 @@ namespace Nefarius.Devcon
             return new Device(instanceId, flags);
         }
 
-        [UsedImplicitly]
-        private SetupApiWrapper.ConfigManagerResult GetProperty(
-            SetupApiWrapper.DEVPROPKEY propertyKey,
-            out SetupApiWrapper.DevPropType propertyType,
-            out IntPtr valueBuffer,
-            out uint valueBufferSize
-        )
+        /// <summary>
+        ///     Return device identified by instance ID/path (symbolic link).
+        /// </summary>
+        /// <param name="symbolicLink">The device interface path/ID/symbolic link name.</param>
+        /// <param name="flags">
+        ///     <see cref="DeviceLocationFlags" />
+        /// </param>
+        /// <returns>A <see cref="Device" />.</returns>
+        public static Device GetDeviceByInterfaceId(string symbolicLink, DeviceLocationFlags flags)
         {
-            valueBuffer = IntPtr.Zero;
-            valueBufferSize = 0;
-            propertyType = SetupApiWrapper.DevPropType.DEVPROP_TYPE_EMPTY;
+            var property = DevicePropertyDevice.InstanceId.ToNativeType();
 
-            var ret = SetupApiWrapper.CM_Get_DevNode_Property(
-                _instanceHandle,
-                ref propertyKey,
-                out _,
-                IntPtr.Zero,
-                ref valueBufferSize,
-                0
-            );
+            var buffer = IntPtr.Zero;
+            uint sizeRequired = 0;
 
-            if (ret != SetupApiWrapper.ConfigManagerResult.BufferSmall
-                && ret != SetupApiWrapper.ConfigManagerResult.Success)
-                return ret;
-
-            valueBuffer = Marshal.AllocHGlobal((int) valueBufferSize);
-
-            ret = SetupApiWrapper.CM_Get_DevNode_Property(
-                _instanceHandle,
-                ref propertyKey,
-                out propertyType,
-                valueBuffer,
-                ref valueBufferSize,
-                0
-            );
-
-            if (ret != SetupApiWrapper.ConfigManagerResult.Success)
+            try
             {
-                Marshal.FreeHGlobal(valueBuffer);
-                valueBuffer = IntPtr.Zero;
-                return ret;
-            }
+                var ret = SetupApiWrapper.CM_Get_Device_Interface_Property(
+                    symbolicLink,
+                    ref property,
+                    out _,
+                    IntPtr.Zero,
+                    ref sizeRequired,
+                    0
+                );
 
-            return ret;
+                if (ret != SetupApiWrapper.ConfigManagerResult.BufferSmall)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                buffer = Marshal.AllocHGlobal((int) sizeRequired);
+
+                ret = SetupApiWrapper.CM_Get_Device_Interface_Property(
+                    symbolicLink,
+                    ref property,
+                    out _,
+                    buffer,
+                    ref sizeRequired,
+                    0
+                );
+
+                if (ret != SetupApiWrapper.ConfigManagerResult.Success)
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+
+                var instanceId = Marshal.PtrToStringUni(buffer);
+
+                return GetDeviceByInstanceId(instanceId, flags);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(buffer);
+            }
+        }
+
+        /// <summary>
+        ///     Return device identified by instance ID/path (symbolic link).
+        /// </summary>
+        /// <param name="symbolicLink">The device interface path/ID/symbolic link name.</param>
+        /// <returns>A <see cref="Device" />.</returns>
+        public static Device GetDeviceByInterfaceId(string symbolicLink)
+        {
+            return GetDeviceByInterfaceId(symbolicLink, DeviceLocationFlags.Normal);
         }
 
         protected virtual void Dispose(bool disposing)

@@ -106,24 +106,24 @@ namespace Nefarius.Devcon
                 }
 
                 // (U)Int16
-                if (managedType == typeof(Int16)
-                    || managedType == typeof(UInt16))
+                if (managedType == typeof(short)
+                    || managedType == typeof(ushort))
                 {
                     var value = Marshal.ReadInt16(buffer);
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
                 // (U)Int32
-                if (managedType == typeof(Int32)
-                    || managedType == typeof(UInt32))
+                if (managedType == typeof(int)
+                    || managedType == typeof(uint))
                 {
                     var value = Marshal.ReadInt32(buffer);
                     return (T) Convert.ChangeType(value, typeof(T));
                 }
 
                 // (U)Int64
-                if (managedType == typeof(Int64)
-                    || managedType == typeof(UInt64))
+                if (managedType == typeof(long)
+                    || managedType == typeof(ulong))
                 {
                     var value = Marshal.ReadInt64(buffer);
                     return (T) Convert.ChangeType(value, typeof(T));
@@ -146,25 +146,49 @@ namespace Nefarius.Devcon
             }
         }
 
-        private static bool IsNumericType(Type t)
+        private SetupApiWrapper.ConfigManagerResult GetProperty(
+            SetupApiWrapper.DEVPROPKEY propertyKey,
+            out SetupApiWrapper.DevPropType propertyType,
+            out IntPtr valueBuffer,
+            out uint valueBufferSize
+        )
         {
-            switch (Type.GetTypeCode(t))
+            valueBuffer = IntPtr.Zero;
+            valueBufferSize = 0;
+            propertyType = SetupApiWrapper.DevPropType.DEVPROP_TYPE_EMPTY;
+
+            var ret = SetupApiWrapper.CM_Get_DevNode_Property(
+                _instanceHandle,
+                ref propertyKey,
+                out _,
+                IntPtr.Zero,
+                ref valueBufferSize,
+                0
+            );
+
+            if (ret != SetupApiWrapper.ConfigManagerResult.BufferSmall
+                && ret != SetupApiWrapper.ConfigManagerResult.Success)
+                return ret;
+
+            valueBuffer = Marshal.AllocHGlobal((int) valueBufferSize);
+
+            ret = SetupApiWrapper.CM_Get_DevNode_Property(
+                _instanceHandle,
+                ref propertyKey,
+                out propertyType,
+                valueBuffer,
+                ref valueBufferSize,
+                0
+            );
+
+            if (ret != SetupApiWrapper.ConfigManagerResult.Success)
             {
-                case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.Decimal:
-                case TypeCode.Double:
-                case TypeCode.Single:
-                    return true;
-                default:
-                    return false;
+                Marshal.FreeHGlobal(valueBuffer);
+                valueBuffer = IntPtr.Zero;
+                return ret;
             }
+
+            return ret;
         }
     }
 }

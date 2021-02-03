@@ -203,6 +203,16 @@ namespace Nefarius.Devcon
             internal readonly ulong DriverVersion;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct SP_DEVICE_INTERFACE_DATA
+        {
+            internal Int32    cbSize;
+            internal Guid     interfaceClassGuid;
+            internal Int32    flags;
+            internal UIntPtr  reserved;
+        }
+
+
         [Flags]
         internal enum DiFlags : uint
         {
@@ -310,6 +320,14 @@ namespace Nefarius.Devcon
             [In] ref SP_DEVINFO_DATA DeviceInfoData
         );
 
+        [DllImport("setupapi.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern bool SetupDiOpenDeviceInterface(
+            [Out] IntPtr DeviceInfoSet,
+            [In] string DevicePath,
+            [In] uint OpenFlags,
+            [In] [Out] ref SP_DEVICE_INTERFACE_DATA DeviceInterfaceData
+        );
+
         #endregion
 
         #region Cfgmgr32
@@ -376,6 +394,16 @@ namespace Nefarius.Devcon
             [In] DevPropType PropertyType,
             [In] IntPtr PropertyBuffer,
             [In] uint PropertyBufferSize,
+            [In] uint ulFlags // reserved
+        );
+
+        [DllImport("Cfgmgr32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        internal static extern ConfigManagerResult CM_Get_Device_Interface_Property(
+            string pszDeviceInterface,
+            [In] ref DEVPROPKEY PropertyKey,
+            [Out] out DevPropType PropertyType,
+            [In] [Out] IntPtr PropertyBuffer,
+            [In] [Out] ref uint PropertyBufferSize,
             [In] uint ulFlags // reserved
         );
 
