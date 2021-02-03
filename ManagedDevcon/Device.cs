@@ -110,6 +110,11 @@ namespace Nefarius.Devcon
         /// </summary>
         public string DeviceId { get; }
 
+        /// <summary>
+        ///     The interface ID.
+        /// </summary>
+        public string InterfaceId { get; protected set; }
+
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
@@ -187,7 +192,9 @@ namespace Nefarius.Devcon
 
                 var instanceId = Marshal.PtrToStringUni(buffer);
 
-                return GetDeviceByInstanceId(instanceId, flags);
+                var device = GetDeviceByInstanceId(instanceId, flags);
+                device.InterfaceId = symbolicLink;
+                return device;
             }
             finally
             {
