@@ -117,12 +117,25 @@ namespace Nefarius.Devcon
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        ///     Return device identified by instance ID.
+        /// </summary>
+        /// <param name="instanceId">The instance ID of the device.</param>
+        /// <returns>A <see cref="Device" />.</returns>
         [UsedImplicitly]
         public static Device GetDeviceByInstanceId(string instanceId)
         {
             return GetDeviceByInstanceId(instanceId, DeviceLocationFlags.Normal);
         }
 
+        /// <summary>
+        ///     Return device identified by instance ID.
+        /// </summary>
+        /// <param name="instanceId">The instance ID of the device.</param>
+        /// <param name="flags">
+        ///     <see cref="DeviceLocationFlags" />
+        /// </param>
+        /// <returns>A <see cref="Device" />.</returns>
         [UsedImplicitly]
         public static Device GetDeviceByInstanceId(string instanceId, DeviceLocationFlags flags)
         {
