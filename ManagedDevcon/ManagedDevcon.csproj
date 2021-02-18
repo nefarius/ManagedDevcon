@@ -13,6 +13,7 @@
     <PackageIcon>favicon.png</PackageIcon>
     <RepositoryUrl>https://github.com/nefarius/ManagedDevcon</RepositoryUrl>
     <PackageTags>devcon setupapi</PackageTags>
+    <Version>1.0.0</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="costura32\DIFxAPI.dll" />
